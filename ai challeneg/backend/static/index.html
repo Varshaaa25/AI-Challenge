@@ -1,0 +1,283 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codebreaker Duel</title>
+    <style>
+      :root{
+        --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#3b82f6; --glass: rgba(255,255,255,0.04);
+      }
+      html,body{height:100%;}
+      body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(135deg,#071021 0%, #081427 100%); color:#e6eef6; display:flex; align-items:flex-start; justify-content:center; padding:2rem; }
+      .app { width:960px; }
+      header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem }
+      h1{ margin:0; font-size:1.25rem; color:var(--accent) }
+      .panel { background:var(--card); border-radius:10px; padding:1rem; margin-bottom:1rem; box-shadow: 0 6px 20px rgba(2,6,23,0.6); }
+      label{ display:block; color:var(--muted); font-size:0.85rem; margin-bottom:0.5rem }
+      input[type=text], input{ padding: .6rem .75rem; font-size:1rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:var(--glass); color:inherit }
+      button{ background:var(--accent); color:white; border:0; padding:.55rem .85rem; border-radius:8px; margin-left:.5rem; cursor:pointer }
+      button.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06) }
+      .row{ display:flex; gap:.5rem; align-items:center }
+      .history{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding: .75rem; border-radius:8px; max-height:240px; overflow:auto }
+      .entry{ padding:.45rem .5rem; border-radius:6px; background: rgba(255,255,255,0.01); margin-bottom:.4rem; display:flex; justify-content:space-between }
+      .log{ font-size:0.85rem; color:var(--muted) }
+      .winner{ background:linear-gradient(90deg,#16a34a,#059669); padding:.75rem; border-radius:10px; text-align:center; font-weight:700 }
+      .muted{ color:var(--muted); font-size:0.9rem }
+      .flex{ display:flex; gap: .75rem; align-items:center }
+      .disabled{ opacity:.5; pointer-events:none }
+    </style>
+  </head>
+  <!doctype html>
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Codebreaker Duel</title>
+      <style>
+        :root{
+          /* white page background but dark game panels */
+          --page-bg: #ffffff;
+          --card: linear-gradient(135deg,#1f0937 0%, #2b0b53 100%);
+          --accent: #ff6bcb; --accent2:#7afcff; --muted:#b9c2d1; --chip:#2b1438;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%;}
+    body{ margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto; background:var(--page-bg); color:#07203a; display:flex; align-items:flex-start; justify-content:center; padding:28px }
+        .wrap{ width:100%; max-width:1100px; }
+        .board{ display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items:start }
+    /* panels keep the dark, game-like style */
+    .panel{ background:var(--card); border-radius:12px; padding:16px; box-shadow: 0 8px 30px rgba(16,24,40,0.18); border:1px solid rgba(255,255,255,0.04); color: #e8eef8 }
+        header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px }
+        h1{ margin:0; font-size:22px; letter-spacing:0.6px; color:var(--accent) }
+        .sub{ color:var(--muted); font-size:13px }
+
+        /* Players area */
+        .players{ display:flex; gap:12px }
+  .card{ flex:1; background: linear-gradient(180deg,#e6f7ff 0%, #d6f0ff 100%); padding:14px; border-radius:12px; min-height:100px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid rgba(6,15,30,0.04); color:#043149; box-shadow: 0 8px 20px rgba(13,38,66,0.06); transition: transform .14s ease, box-shadow .14s ease }
+  .card:hover{ transform: translateY(-6px); box-shadow: 0 18px 40px rgba(13,38,66,0.12) }
+  .player-name{ font-weight:800; font-size:16px; color:#03263b }
+  .secret{ font-size:20px; letter-spacing:8px; margin-top:6px; color:#03263b; font-weight:700 }
+  .locked{ color:#0f766e; font-weight:800 }
+
+        /* Center play area */
+        .play{ display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center; text-align:center }
+        .turn-badge{ font-weight:800; padding:12px 18px; border-radius:999px; background: linear-gradient(90deg,var(--accent), var(--accent2)); color:#071124; box-shadow: 0 6px 18px rgba(123, 60, 147, 0.08); font-size:18px }
+        .guess-box{ display:flex; gap:8px; margin-top:8px }
+        input[type=text]{ padding:12px 14px; border-radius:10px; border:1px solid rgba(6,15,30,0.06); outline:none; font-size:16px; width:220px; background:transparent; color:inherit }
+        button{ padding:10px 14px; border-radius:10px; font-weight:700; border:none; cursor:pointer }
+        .btn-guess{ background: linear-gradient(90deg,#ff6bcb,#7afcff); color:#051025 }
+        .btn-ghost{ background:transparent; border:1px solid rgba(6,15,30,0.06); color:var(--muted) }
+
+        .status{ color:var(--muted); font-size:13px; margin-top:6px }
+
+        /* Right column */
+        .right{ display:flex; flex-direction:column; gap:12px }
+        .session-row{ display:flex; gap:8px; align-items:center }
+        .session-row input{ width:160px }
+
+    .winner-banner{ background: linear-gradient(90deg,#ffd166,#ff6b6b); color:#08111b; padding:12px; font-weight:900; border-radius:12px; font-size:18px }
+
+        /* History */
+  .history-panel{ margin-top:14px; background: linear-gradient(180deg,#e6f7ff 0%, #d6f0ff 100%); border-radius:10px; padding:12px; border:1px solid rgba(6,15,30,0.04); max-height:300px; overflow:auto; color:#03263b }
+  .history-item{ display:flex; justify-content:space-between; gap:12px; align-items:center; padding:10px; border-radius:8px; margin-bottom:8px; background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(250,250,255,0.9)); box-shadow: 0 6px 18px rgba(12,24,40,0.03) }
+  .chip{ background: linear-gradient(90deg,#cfefff,#bfe8ff); padding:6px 10px; border-radius:999px; font-weight:800; color:#03263b; border:1px solid rgba(6,15,30,0.03) }
+
+        .confetti{ position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; overflow:hidden }
+        .confetti-piece{ position:absolute; width:10px; height:14px; opacity:0.95; transform:translateY(-20px); animation:fall 1600ms linear forwards }
+        @keyframes fall{ to{ transform: translateY(110vh) rotate(360deg); opacity:0.9 } }
+
+        @media (max-width:980px){ .board{ grid-template-columns: 1fr; } .right{ order:-1 } }
+      </style>
+    </head>
+    <body>
+      <div class="wrap">
+        <header>
+          <div>
+            <h1>Codebreaker Duel</h1>
+            <div class="sub">Fast, real-time 1v1 guessing — make every digit count</div>
+          </div>
+          <div class="sub">Session play — share code to join</div>
+        </header>
+
+        <div class="board">
+          <div class="panel">
+            <div class="players" id="players-area">
+              <!-- Player cards rendered by React -->
+            </div>
+
+            <div class="play" style="margin-top:14px">
+              <div id="turnArea" class="turn-badge">Waiting for players...</div>
+
+              <div style="margin-top:10px; font-size:14px" id="statusMsg">Connect and lock your secret to begin</div>
+
+              <div class="guess-box" style="margin-top:12px">
+                <input id="guessInput" type="text" placeholder="4 unique digits" />
+                <button id="guessBtn" class="btn-guess">GUESS</button>
+                <button id="clearBtn" class="btn-ghost">CLEAR</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="panel session-row">
+              <input id="sessionInput" type="text" placeholder="Session code" />
+              <button id="createBtn" class="btn-ghost">Create</button>
+              <button id="joinBtn" class="btn-ghost">Join</button>
+            </div>
+
+            <div class="panel">
+              <div style="margin-bottom:8px"><strong>Player ID</strong></div>
+              <input id="playerIdInput" type="text" />
+              <div style="margin-top:10px"><strong>Secret</strong></div>
+              <div style="display:flex; gap:8px; margin-top:8px">
+                <input id="secretInput" type="text" placeholder="4 unique digits" />
+                <button id="setSecretBtn" class="btn-ghost">Set</button>
+                <button id="lockSecretBtn" class="btn-ghost">Lock</button>
+              </div>
+            </div>
+
+            <div class="panel" id="winnerPanel" style="display:none">
+              <div id="winnerBanner" class="winner-banner">WINNER</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="confetti" id="confetti"></div>
+      </div>
+
+      <!-- React + ReactDOM (still used for state) -->
+      <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+      <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+      <script>
+      (function(){
+        // Small controller using React for state handling but DOM refs for visuals
+        const e = React.createElement;
+
+    const root = document.body;
+        // state
+        let ws = null;
+        let session = '';
+        let playerId = 'P' + Math.floor(Math.random()*900 + 100);
+        let players = [];
+        let turn = null;
+        let locked = false;
+        let gameOver = false;
+    let history = [];
+
+        // DOM refs
+        const sessionInput = document.getElementById('sessionInput');
+        const createBtn = document.getElementById('createBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const playerIdInput = document.getElementById('playerIdInput');
+        const secretInput = document.getElementById('secretInput');
+        const setSecretBtn = document.getElementById('setSecretBtn');
+        const lockSecretBtn = document.getElementById('lockSecretBtn');
+        const playersArea = document.getElementById('players-area');
+        const turnArea = document.getElementById('turnArea');
+        const statusMsg = document.getElementById('statusMsg');
+        const guessInput = document.getElementById('guessInput');
+        const guessBtn = document.getElementById('guessBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const winnerPanel = document.getElementById('winnerPanel');
+        const winnerBanner = document.getElementById('winnerBanner');
+
+        playerIdInput.value = playerId;
+        sessionInput.value = session;
+
+        function displayName(name){ return name === playerId ? 'You' : name }
+
+        function renderPlayers(){
+          playersArea.innerHTML = '';
+          players.forEach(p=>{
+            const div = document.createElement('div'); div.className='card';
+            const name = document.createElement('div'); name.className='player-name'; name.textContent = displayName(p);
+            const secret = document.createElement('div'); secret.className='secret'; secret.textContent = p === playerId ? (locked ? '••••' : '????') : '----';
+            const lockedEl = document.createElement('div'); lockedEl.className='muted'; lockedEl.style.marginTop='6px'; lockedEl.textContent = (p===playerId && locked) ? 'Locked' : '';
+            div.appendChild(name); div.appendChild(secret); div.appendChild(lockedEl);
+            playersArea.appendChild(div);
+          });
+        }
+
+        // history UI
+        const historyArea = document.createElement('div'); historyArea.className='history-panel'; historyArea.id='historyArea';
+        // insert history panel below playersArea
+        playersArea.parentNode.appendChild(historyArea);
+
+        function renderHistory(){
+          historyArea.innerHTML = '';
+          if(history.length === 0){ const p = document.createElement('div'); p.className='muted'; p.textContent='No guesses yet'; historyArea.appendChild(p); return }
+          history.forEach(h=>{
+            const it = document.createElement('div'); it.className='history-item';
+            const left = document.createElement('div'); left.style.display='flex'; left.style.gap='12px';
+            const name = document.createElement('div'); name.textContent = displayName(h.from); name.style.fontWeight='700';
+            const guess = document.createElement('div'); guess.className='chip'; guess.textContent = h.guess;
+            left.appendChild(name); left.appendChild(guess);
+            const right = document.createElement('div'); right.style.textAlign='right'; right.innerHTML = `${h.correct_digits} digits<br><strong>${h.correct_positions}</strong> pos`;
+            it.appendChild(left); it.appendChild(right);
+            historyArea.appendChild(it);
+          });
+        }
+
+        function setStatus(s){ statusMsg.textContent = s; }
+
+        function canGuess(){ return ws && ws.readyState === 1 && turn === playerId && !gameOver; }
+
+        function updateTurnUI(){
+          if(gameOver) {
+            turnArea.textContent = 'Game Over';
+            return;
+          }
+          if(!players.length) turnArea.textContent = 'Waiting for players...';
+          else if(!turn) turnArea.textContent = 'Waiting to start...';
+          else if(turn === playerId) turnArea.textContent = 'Your Turn — GUESS NOW!';
+          else turnArea.textContent = `Opponent's Turn (${turn})`;
+          // enable/disable guess input
+          guessInput.disabled = !canGuess();
+          guessBtn.disabled = !canGuess();
+          if(canGuess()) guessBtn.classList.add('active'); else guessBtn.classList.remove('active');
+        }
+
+        function createSessionCode(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
+
+        function connect(code){
+          if(!code) return alert('Enter or create a session code');
+          session = code; sessionInput.value = session; playerId = playerIdInput.value || playerId; setStatus('Connecting...');
+          const wsUrl = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/${code}/${playerId}`;
+          ws = new WebSocket(wsUrl);
+          ws.onopen = ()=>{ setStatus('Connected — set and lock your secret'); }
+          ws.onmessage = (ev)=>{
+            const d = JSON.parse(ev.data);
+            if(d.type === 'players'){ players = d.players; renderPlayers(); }
+            else if(d.type === 'player_update'){ setStatus(`${displayName(d.player)} ${d.locked ? 'locked' : 'unlocked'}`); }
+            else if(d.type === 'game_start'){ turn = d.turn; setStatus('Game started'); updateTurnUI(); }
+            else if(d.type === 'guess_result'){ turn = d.turn; // add new guess at top
+              history.unshift(d.entry); renderHistory(); setStatus(`${displayName(d.entry.from)} guessed ${d.entry.guess} → ${d.entry.correct_digits} digits, ${d.entry.correct_positions} pos`); updateTurnUI(); }
+            else if(d.type === 'game_over'){ gameOver = true; history.unshift(d.entry); renderHistory(); setStatus(`GAME OVER — Winner: ${displayName(d.winner)}`); winnerBanner.textContent = `WINNER: ${displayName(d.winner)}`; winnerPanel.style.display='block'; runConfetti(); updateTurnUI(); }
+            else if(d.type === 'error'){ setStatus('ERROR: ' + d.message); }
+          };
+          ws.onclose = ()=>{ setStatus('Disconnected'); }
+        }
+
+        function send(type, data){ if(!ws) return setStatus('Not connected'); ws.send(JSON.stringify(Object.assign({type}, data))); }
+
+    createBtn.addEventListener('click', ()=>{ const code=createSessionCode(); sessionInput.value=code; connect(code); });
+        joinBtn.addEventListener('click', ()=> connect(sessionInput.value));
+        setSecretBtn.addEventListener('click', ()=>{ secretInput.value = secretInput.value.trim(); if(!/^[0-9]{4}$/.test(secretInput.value) || new Set(secretInput.value).size !== 4) return setStatus('Secret must be 4 unique digits'); send('set_secret',{secret:secretInput.value}); locked=false; setStatus('Secret set (not locked)'); });
+        lockSecretBtn.addEventListener('click', ()=>{ send('lock_secret',{}); locked=true; setStatus('Secret locked'); });
+
+        guessBtn.addEventListener('click', ()=>{ const g=guessInput.value.trim(); if(!/^[0-9]{4}$/.test(g) || new Set(g).size !==4) return setStatus('Guess must be 4 unique digits'); send('guess',{guess:g}); guessInput.value=''; setStatus('Guess sent'); });
+        clearBtn.addEventListener('click', ()=>{ guessInput.value=''; });
+
+        // Confetti
+        function runConfetti(){ const container = document.getElementById('confetti'); for(let i=0;i<40;i++){ const div=document.createElement('div'); div.className='confetti-piece'; div.style.left = Math.random()*100 + '%'; div.style.background = ['#ff6bcb','#7afcff','#ffd166','#7c3aed'][Math.floor(Math.random()*4)]; div.style.transform = `translateY(-10vh) rotate(${Math.random()*360}deg)`; div.style.animationDuration = (1200+Math.random()*900)+'ms'; div.style.top = (-10-Math.random()*5)+'vh'; container.appendChild(div); setTimeout(()=>div.remove(),2200); } }
+
+        // initial render
+        renderPlayers(); renderHistory(); updateTurnUI();
+      })();
+      </script>
+    </body>
+  </html>
+
+  </body>
+</html>
